@@ -12,7 +12,27 @@ class TaskSerializer(serializers.ModelSerializer):
             'description',
             'status',
             'deadline',
+            'created_at',
         ]
+
+
+class TaskCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = [
+            'id',
+            'title',
+            'description',
+            'status',
+            'deadline',
+        ]
+
+    def validate_deadline(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError("Deadline cannot be in the past.")
+
+        return value
+
 
 class SubTaskSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,6 +46,7 @@ class SubTaskSerializer(serializers.ModelSerializer):
             'deadline',
             'created_at',
         ]
+
 
 class SubTaskCreateSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
@@ -41,6 +62,23 @@ class SubTaskCreateSerializer(serializers.ModelSerializer):
             'deadline',
             'created_at'
         ]
+
+
+class TaskDetailSerializer(serializers.ModelSerializer):
+    subtasks = SubTaskSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Task
+        fields = [
+            'id',
+            'title',
+            'description',
+            'status',
+            'deadline',
+            'created_at',
+            'subtasks',
+        ]
+
 
 class CategoryCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -65,36 +103,3 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
-
-
-class TaskDetailSerializer(serializers.ModelSerializer):
-    subtasks = SubTaskSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Task
-        fields = [
-            'id',
-            'title',
-            'description',
-            'status',
-            'deadline',
-            'created_at',
-            'subtasks',
-        ]
-
-class TaskCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Task
-        fields = [
-            'id',
-            'title',
-            'description',
-            'status',
-            'deadline',
-        ]
-
-    def validate_deadline(self, value):
-        if value < timezone.now():
-            raise serializers.ValidationError("Deadline cannot be in the past.")
-
-        return value
