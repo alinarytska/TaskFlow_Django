@@ -2,15 +2,23 @@ from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.db.models import Count
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework import filters
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
 
-from test_app.models import Task, SubTask
-from test_app.serializers import TaskSerializer, TaskCreateSerializer, TaskDetailSerializer, SubTaskSerializer, SubTaskCreateSerializer
+from test_app.models import Task, SubTask, Category
+from test_app.serializers import (
+    TaskSerializer,
+    TaskCreateSerializer,
+    TaskDetailSerializer,
+    SubTaskSerializer,
+    SubTaskCreateSerializer,
+    CategorySerializer,
+)
 
 
 def greetings(request: HttpRequest) -> HttpResponse:
@@ -90,3 +98,20 @@ class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
             return SubTaskSerializer
 
         return SubTaskCreateSerializer
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+    @action(detail=True, methods=['get'])
+    def count_tasks(self, request, pk=None):
+        category = self.get_object()
+        tasks_count = category.task_set.count()
+
+        return Response(
+            {
+                'category': category.name,
+                'tasks_count': tasks_count
+            }
+        )

@@ -80,10 +80,19 @@ class TaskDetailSerializer(serializers.ModelSerializer):
         ]
 
 
-class CategoryCreateSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name']
+        fields = [
+            'id',
+            'name',
+            'is_deleted',
+            'deleted_at',
+        ]
+        read_only_fields = [
+            'is_deleted',
+            'deleted_at',
+        ]
 
     def create(self, validated_data):
         name = validated_data.get('name')

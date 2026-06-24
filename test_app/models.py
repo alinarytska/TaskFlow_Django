@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+from .managers import SoftDeleteManager
 
 
 status_choices = [
@@ -67,6 +69,10 @@ class SubTask(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = SoftDeleteManager()
 
     class Meta:
         db_table = 'task_manager_category'
@@ -80,6 +86,11 @@ class Category(models.Model):
                 name='unique_category_name',
             )
         ]
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
 
     def __str__(self):
         return self.name
