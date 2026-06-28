@@ -119,6 +119,58 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'test_app.pagination.CustomCursorPagination',
+    'PAGE_SIZE': 6,
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {name} {message}',
+            'style': '{',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'http_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'http_logs.log',
+            'formatter': 'verbose',
+        },
+        'db_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'db_logs.log',
+            'formatter': 'verbose',
+        },
+    },
+
+    'loggers': {
+        'django.server': {
+            'handlers': ['console', 'http_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['db_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 

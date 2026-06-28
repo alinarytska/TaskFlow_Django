@@ -1,7 +1,6 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.db.models import Count
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework import filters
@@ -42,13 +41,8 @@ def task_statistics(request):
     )
 
 
-class CustomPagination(PageNumberPagination):
-    page_size = 5
-
-
 class TaskListCreateView(ListCreateAPIView):
     queryset = Task.objects.all().order_by('-created_at')
-    pagination_class = CustomPagination
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
@@ -75,7 +69,6 @@ class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
 class SubTaskListCreateView(ListCreateAPIView):
     queryset = SubTask.objects.all().order_by('-created_at')
-    pagination_class = CustomPagination
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
