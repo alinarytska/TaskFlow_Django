@@ -1,11 +1,12 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.db.models import Count
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
 from rest_framework import filters
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 
 
@@ -25,6 +26,7 @@ def greetings(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def task_statistics(request):
     total_tasks = Task.objects.count()
 
@@ -43,7 +45,7 @@ def task_statistics(request):
 
 class TaskListCreateView(ListCreateAPIView):
     queryset = Task.objects.all().order_by('-created_at')
-
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     filterset_fields = ['status', 'deadline']
@@ -59,6 +61,7 @@ class TaskListCreateView(ListCreateAPIView):
 
 class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -69,7 +72,7 @@ class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
 class SubTaskListCreateView(ListCreateAPIView):
     queryset = SubTask.objects.all().order_by('-created_at')
-
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     filterset_fields = ['status', 'deadline']
@@ -85,6 +88,7 @@ class SubTaskListCreateView(ListCreateAPIView):
 
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = SubTask.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -96,6 +100,7 @@ class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     @action(detail=True, methods=['get'])
     def count_tasks(self, request, pk=None):
