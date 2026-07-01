@@ -149,6 +149,11 @@ SIMPLE_JWT = {
 }
 
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+DEFAULT_FROM_EMAIL = 'noreply@example.com'
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
