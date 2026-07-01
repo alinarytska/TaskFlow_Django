@@ -8,7 +8,8 @@ from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpda
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
-
+from rest_framework.views import APIView
+from rest_framework import status
 
 
 from test_app.models import Task, SubTask, Category
@@ -20,6 +21,9 @@ from test_app.serializers import (
     SubTaskSerializer,
     SubTaskCreateSerializer,
     CategorySerializer,
+    RegisterSerializer,
+    LoginSerializer,
+    LogoutSerializer,
 )
 
 
@@ -131,3 +135,85 @@ class CategoryViewSet(viewsets.ModelViewSet):
                 'tasks_count': tasks_count
             }
         )
+
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "User registered successfully."},
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+
+        if serializer.is_valid():
+            access_token = serializer.validated_data['access']
+            refresh_token = serializer.validated_data['refresh']
+
+            response = Response(
+                {"message": "Login successful."},
+                status=status.HTTP_200_OK
+            )
+
+            response.set_cookie(
+                key='access_token',
+                value=access_token,
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+            )
+
+            response.set_cookie(
+                key='refresh_token',
+                value=refresh_token,
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+            )
+
+            return response
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            return Response(
+                {"detail": "Refresh token not found."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = LogoutSerializer(data={'refresh': refresh_token})
+
+        if serializer.is_valid():
+            serializer.save()
+
+            response = Response(
+                {"message": "Logout successful."},
+                status=status.HTTP_205_RESET_CONTENT
+            )
+
+            response.delete_cookie('access_token')
+            response.delete_cookie('refresh_token')
+
+            return response
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

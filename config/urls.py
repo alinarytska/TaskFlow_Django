@@ -14,6 +14,9 @@ from test_app.views import (
     SubTaskListCreateView,
     CategoryViewSet,
     UserTaskListView,
+    RegisterView,
+    LoginView,
+    LogoutView,
 )
 
 
@@ -36,6 +39,10 @@ urlpatterns = [
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path('api/register/', RegisterView.as_view(), name='register'),
+    path('api/login/', LoginView.as_view(), name='login'),
+    path('api/logout/', LogoutView.as_view(), name='logout'),
 
     path('api/tasks/statistics/', task_statistics),
     path('api/tasks/', TaskListCreateView.as_view()),
