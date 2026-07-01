@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'test_app.apps.TestAppConfig',
     'rest_framework',
     'django_filters',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

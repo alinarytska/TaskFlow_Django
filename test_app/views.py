@@ -4,13 +4,15 @@ from django.db.models import Count
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
 from rest_framework import filters
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 
 
+
 from test_app.models import Task, SubTask, Category
+from test_app.permissions import IsOwnerOrReadOnly
 from test_app.serializers import (
     TaskSerializer,
     TaskCreateSerializer,
@@ -46,6 +48,7 @@ def task_statistics(request):
 class TaskListCreateView(ListCreateAPIView):
     queryset = Task.objects.all().order_by('-created_at')
     permission_classes = [IsAuthenticatedOrReadOnly]
+
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     filterset_fields = ['status', 'deadline']
@@ -58,10 +61,13 @@ class TaskListCreateView(ListCreateAPIView):
 
         return TaskSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -73,6 +79,7 @@ class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 class SubTaskListCreateView(ListCreateAPIView):
     queryset = SubTask.objects.all().order_by('-created_at')
     permission_classes = [IsAuthenticatedOrReadOnly]
+
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     filterset_fields = ['status', 'deadline']
@@ -85,16 +92,27 @@ class SubTaskListCreateView(ListCreateAPIView):
 
         return SubTaskSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = SubTask.objects.all()
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return SubTaskSerializer
 
         return SubTaskCreateSerializer
+
+
+class UserTaskListView(ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Task.objects.filter(owner=self.request.user).order_by('-created_at')
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

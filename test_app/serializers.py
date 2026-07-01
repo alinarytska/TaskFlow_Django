@@ -4,6 +4,8 @@ from test_app.models import Task, SubTask, Category
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+
     class Meta:
         model = Task
         fields = [
@@ -13,10 +15,13 @@ class TaskSerializer(serializers.ModelSerializer):
             'status',
             'deadline',
             'created_at',
+            'owner',
         ]
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+
     class Meta:
         model = Task
         fields = [
@@ -25,6 +30,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
             'description',
             'status',
             'deadline',
+            'owner',
         ]
 
     def validate_deadline(self, value):
@@ -35,6 +41,8 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
 
 class SubTaskSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+
     class Meta:
         model = SubTask
         fields = [
@@ -45,10 +53,12 @@ class SubTaskSerializer(serializers.ModelSerializer):
             'status',
             'deadline',
             'created_at',
+            'owner',
         ]
 
 
 class SubTaskCreateSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
     created_at = serializers.DateTimeField(read_only=True)
 
     class Meta:
@@ -60,11 +70,13 @@ class SubTaskCreateSerializer(serializers.ModelSerializer):
             'task',
             'status',
             'deadline',
-            'created_at'
+            'created_at',
+            'owner',
         ]
 
 
 class TaskDetailSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
     subtasks = SubTaskSerializer(many=True, read_only=True)
 
     class Meta:
@@ -76,6 +88,7 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             'status',
             'deadline',
             'created_at',
+            'owner',
             'subtasks',
         ]
 
